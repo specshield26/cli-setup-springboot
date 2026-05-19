@@ -4,7 +4,7 @@ A minimal Spring Boot / Maven project used to validate that SpecShield's `Dashbo
 
 The OpenAPI specs in this directory are intentionally **identical** to the ones in `../nodejs-test-project/` so test scenario **P9.1** (multi-language consistency) can verify that SpecShield's diff output is byte-identical across project types — proving the tool is language-agnostic.
 
-## What's here
+## What's here new
 
 | Path | Purpose |
 |---|---|
