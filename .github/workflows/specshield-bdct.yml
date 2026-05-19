@@ -5,6 +5,9 @@ name: SpecShield BDCT
 on:
   push:
     branches: [main]
+    paths:
+      - 'openapi.yaml'
+      - '.github/workflows/specshield-bdct.yml'
 
 jobs:
   publish-provider:
