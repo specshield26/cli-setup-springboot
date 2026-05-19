@@ -28,7 +28,7 @@ jobs:
       - uses: specshield26/bdct-action@v1
         with:
           command: can-i-deploy
-          org: abc_xyz
+          org: deepaksatyam26
           service: springboot-test-project
           version: ${{ github.sha }}
           env: production
