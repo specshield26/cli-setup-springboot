@@ -1,0 +1,12 @@
+target/
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+.DS_Store
+*.log
+.env
+.specshield/
+diff.json
+diff.xml

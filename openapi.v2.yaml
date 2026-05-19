@@ -1,0 +1,203 @@
+openapi: 3.0.3
+info:
+  title: Users API
+  description: |
+    v2 of the test fixture's "users" API. Identical content to the Node
+    test project's openapi.v2.yaml so the diff produced by SpecShield is
+    byte-identical when run against either project (verified by P9.1).
+
+    Changes from v1:
+      BREAKING:
+        1. `User.legacy_id` removed (response field deletion)
+        2. `POST /users` request body now requires `email` (previously optional)
+        3. `DELETE /users/{id}` endpoint removed
+      MODIFICATIONS:
+        4. `GET /users` query param `limit` max increased from 100 to 250
+      ADDITIONS:
+        5. New endpoint `GET /users/{id}/audit-log` (non-breaking)
+        6. New optional response field `User.last_login_at` (non-breaking)
+  version: 2.0.0
+  contact:
+    name: SpecShield Test Fixture
+    email: test@specshield.io
+
+servers:
+  - url: https://api.example.com/v2
+    description: Production
+  - url: http://localhost:8080
+    description: Local dev
+
+tags:
+  - name: users
+    description: User account operations
+
+paths:
+  /users:
+    get:
+      tags: [users]
+      operationId: listUsers
+      summary: List all users
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 250            # was 100 in v1 — non-breaking, just relaxed
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+      responses:
+        '200':
+          description: Paginated list of users
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, total]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+                  total:
+                    type: integer
+
+    post:
+      tags: [users]
+      operationId: createUser
+      summary: Create a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email]   # email is now REQUIRED (breaking)
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 100
+                email:
+                  type: string
+                  format: email
+      responses:
+        '201':
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+  /users/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+
+    get:
+      tags: [users]
+      operationId: getUser
+      summary: Get a single user
+      responses:
+        '200':
+          description: User found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: User not found
+
+    patch:
+      tags: [users]
+      operationId: updateUser
+      summary: Update a user's mutable fields
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                  format: email
+      responses:
+        '200':
+          description: Updated user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+    # DELETE /users/{id} removed in v2 — breaking change.
+
+  /users/{id}/audit-log:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+
+    get:
+      tags: [users]
+      operationId: getUserAuditLog
+      summary: Get the audit log for a user
+      description: |
+        New endpoint added in v2. Non-breaking — existing consumers don't
+        care that this endpoint exists.
+      responses:
+        '200':
+          description: Audit events for the user
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required: [event, occurred_at]
+                  properties:
+                    event:
+                      type: string
+                    occurred_at:
+                      type: string
+                      format: date-time
+
+components:
+  schemas:
+    User:
+      type: object
+      required: [id, name, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+          nullable: true
+        # legacy_id removed in v2 — breaking change.
+        created_at:
+          type: string
+          format: date-time
+        last_login_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: |
+            New optional field in v2. Non-breaking — existing clients
+            that don't read this field are unaffected.
