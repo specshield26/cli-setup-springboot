@@ -14,9 +14,10 @@ jobs:
       - uses: specshield26/bdct-action@v1
         with:
           command: publish-provider
+          org: abc_xyz
           provider: springboot-test-project
           version: ${{ github.sha }}
-          spec: api/openapi.yaml
+          spec: openapi.yaml
           env: production
           api-token: ${{ secrets.SPECSHIELD_API_KEY }}
 
@@ -27,20 +28,8 @@ jobs:
       - uses: specshield26/bdct-action@v1
         with:
           command: can-i-deploy
+          org: abc_xyz
           service: springboot-test-project
           version: ${{ github.sha }}
           env: production
-          api-token: ${{ secrets.SPECSHIELD_API_KEY }}
-
-  publish-consumer:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: specshield26/bdct-action@v1
-        with:
-          command: publish-consumer
-          consumer: springboot-test-project
-          provider: nothing
-          version: ${{ github.sha }}
-          contract: contracts/contract.yaml
           api-token: ${{ secrets.SPECSHIELD_API_KEY }}

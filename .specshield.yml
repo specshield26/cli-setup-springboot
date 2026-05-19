@@ -22,13 +22,6 @@ bdct:
     spec: openapi.yaml
     branch: main
 
-  # This project publishes a consumer contract.
-  consumer:
-    name: springboot-test-project
-    provider: nothing
-    contract: contracts/contract.yaml
-    format: OPENAPI
-
 # GitHub App + bdct-action defaults.
 github:
   specPath: openapi.yaml
