@@ -13,7 +13,7 @@ severity: error
 
 # BDCT defaults — used by every `specshield bdct ...` command.
 bdct:
-  org: deepaksatyam26
+  org: testorg
   environment: production
 
   # This project publishes a provider spec.

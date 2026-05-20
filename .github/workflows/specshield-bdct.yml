@@ -5,9 +5,6 @@ name: SpecShield BDCT
 on:
   push:
     branches: [main]
-    paths:
-      - 'openapi.yaml'
-      - '.github/workflows/specshield-bdct.yml'
 
 jobs:
   publish-provider:
@@ -17,7 +14,7 @@ jobs:
       - uses: specshield26/bdct-action@v1
         with:
           command: publish-provider
-          org: deepaksatyam26
+          org: testorg
           provider: springboot-test-project
           version: ${{ github.sha }}
           spec: openapi.yaml
@@ -31,7 +28,7 @@ jobs:
       - uses: specshield26/bdct-action@v1
         with:
           command: can-i-deploy
-          org: deepaksatyam26
+          org: testorg
           service: springboot-test-project
           version: ${{ github.sha }}
           env: production
