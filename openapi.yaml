@@ -2,18 +2,27 @@ openapi: 3.0.3
 info:
   title: Users API
   description: |
-    Minimal "users" CRUD API used as a SpecShield test fixture.
-    This is the **v1** (baseline) spec. Identical to the Node test
-    project's openapi.yaml — by design — so test scenario P9.1
-    (multi-language consistency) can verify the diff output is
-    byte-identical across project types.
-  version: 1.0.0
+    v2 of the test fixture's "users" API. Identical content to the Node
+    test project's openapi.v2.yaml so the diff produced by SpecShield is
+    byte-identical when run against either project (verified by P9.1).
+
+    Changes from v1:
+      BREAKING:
+        1. `User.legacy_id` removed (response field deletion)
+        2. `POST /users` request body now requires `email` (previously optional)
+        3. `DELETE /users/{id}` endpoint removed
+      MODIFICATIONS:
+        4. `GET /users` query param `limit` max increased from 100 to 250
+      ADDITIONS:
+        5. New endpoint `GET /users/{id}/audit-log` (non-breaking)
+        6. New optional response field `User.last_login_at` (non-breaking)
+  version: 2.0.0
   contact:
     name: SpecShield Test Fixture
     email: test@specshield.io
 
 servers:
-  - url: https://api.example.com/v1
+  - url: https://api.example.com/v2
     description: Production
   - url: http://localhost:8080
     description: Local dev
@@ -35,7 +44,7 @@ paths:
             type: integer
             default: 20
             minimum: 1
-            maximum: 100
+            maximum: 250            # was 100 in v1 — non-breaking, just relaxed
         - in: query
           name: offset
           schema:
@@ -57,7 +66,6 @@ paths:
                       $ref: '#/components/schemas/User'
                   total:
                     type: integer
-                    description: Total number of users matching the query
 
     post:
       tags: [users]
@@ -69,7 +77,7 @@ paths:
           application/json:
             schema:
               type: object
-              required: [name]
+              required: [name, email]   # email is now REQUIRED (breaking)
               properties:
                 name:
                   type: string
@@ -78,7 +86,6 @@ paths:
                 email:
                   type: string
                   format: email
-                  description: Optional in v1; required in v2 (breaking change).
       responses:
         '201':
           description: User created
@@ -133,17 +140,40 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
+    # DELETE /users/{id} removed in v2 — breaking change.
 
-    delete:
+  /users/{id}/audit-log:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+
+    get:
       tags: [users]
-      operationId: deleteUser
-      summary: Delete a user
+      operationId: getUserAuditLog
+      summary: Get the audit log for a user
       description: |
-        Removed entirely in v2 — this is a breaking change. Any consumer
-        still calling DELETE /users/{id} will get a 404 against the v2 API.
+        New endpoint added in v2. Non-breaking — existing consumers don't
+        care that this endpoint exists.
       responses:
-        '204':
-          description: User deleted
+        '200':
+          description: Audit events for the user
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required: [event, occurred_at]
+                  properties:
+                    event:
+                      type: string
+                    occurred_at:
+                      type: string
+                      format: date-time
 
 components:
   schemas:
@@ -160,11 +190,14 @@ components:
           type: string
           format: email
           nullable: true
-        legacy_id:
-          type: integer
-          description: |
-            Pre-UUID numeric ID for compatibility with the old system.
-            Removed in v2 — clients that read this field will break.
+        # legacy_id removed in v2 — breaking change.
         created_at:
           type: string
           format: date-time
+        last_login_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: |
+            New optional field in v2. Non-breaking — existing clients
+            that don't read this field are unaffected.
