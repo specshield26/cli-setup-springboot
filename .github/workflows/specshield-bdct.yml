@@ -14,7 +14,7 @@ jobs:
       - uses: specshield26/bdct-action@v1
         with:
           command: publish-provider
-          org: testorg
+          org: deepaksatyam26
           provider: springboot-test-project
           version: ${{ github.sha }}
           spec: openapi.yaml
@@ -28,7 +28,7 @@ jobs:
       - uses: specshield26/bdct-action@v1
         with:
           command: can-i-deploy
-          org: testorg
+          org: deepaksatyam26
           service: springboot-test-project
           version: ${{ github.sha }}
           env: production
